@@ -58,6 +58,17 @@ async def set_webhook():
                 os.environ["WEBHOOK_INITIALIZED"] = "true"
             else:
                 print(f"Failed to set webhook: {response.json()}")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cleanup resources during shutdown."""
+    global http_client
+    if http_client:
+        await http_client.aclose()  # Close the HTTP client connection
+        print("HTTP client closed.")
+
+        
 # Optionally, you can add error handling here to catch any exceptions that might occur
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
