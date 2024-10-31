@@ -4,7 +4,7 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 import os
 from dotenv import load_dotenv
-
+from fastapi.responses import JSONResponse
 load_dotenv()
 
 bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -54,3 +54,7 @@ async def set_webhook():
                 os.environ["WEBHOOK_INITIALIZED"] = "true"
             else:
                 print(f"Failed to set webhook: {response.json()}")
+# Optionally, you can add error handling here to catch any exceptions that might occur
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    return JSONResponse(content={"message": str(exc)}, status_code=500)
