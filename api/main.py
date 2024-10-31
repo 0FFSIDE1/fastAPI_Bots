@@ -24,6 +24,7 @@ async def get_application():
     if not application:
         application = Application.builder().token(bot_token).build()
         application.add_handler(CommandHandler("start", start))
+        # application.add_handler(CommandHandler("deposit", deposit))
         application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
         await application.initialize()  # Asynchronously initialize the application
     return application
@@ -31,10 +32,16 @@ async def get_application():
 async def start(update: Update, context) -> None:
     await update.message.reply_text("Hello! How can I help you today?")
 
+# async def deposit(update: Update, context) -> None:
+#     await update.message.reply_text("Select wallet address:\nBitcoin (BTC)\nUSDT (TRC20)\nSolana (SOL)\nRipple (XRP)\nEthereum (ETH)")
+
 async def handle_message(update: Update, context) -> None:
     text = update.message.text
+    wallets = ['Bitcoin']
     if "help" in text.lower():
         await update.message.reply_text("How can I assist you? Please provide details.")
+    elif "deposit" in text.lower():
+        await update.message.reply_text("Select wallet address:\nBitcoin (BTC)\nUSDT (TRC20)\nSolana (SOL)\nRipple (XRP)\nEthereum (ETH)")
     else:
         await context.bot.send_message(chat_id=chat_id, text=f"User Message: {text}")
         await update.message.reply_text("Thank you for your message!")
