@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request
 import httpx  # Use httpx for async HTTP requests
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
@@ -14,10 +14,7 @@ webhook_url = os.getenv("WEBHOOK_URL")
 app = FastAPI()
 application = Application.builder().token(bot_token).build()  # Initialize application directly
 
-# Setup handlers
-application.add_handler(CommandHandler("start", start))
-application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-
+# Define your handlers before adding them to the application
 async def start(update: Update, context) -> None:
     await update.message.reply_text("Hello! How can I help you today?")
 
@@ -30,6 +27,10 @@ async def handle_message(update: Update, context) -> None:
     else:
         await context.bot.send_message(chat_id=chat_id, text=f"User Message: {text}")
         await update.message.reply_text("Thank you for your message!")
+
+# Now add the handlers
+application.add_handler(CommandHandler("start", start))
+application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
 @app.post("/webhook")
 async def telegram_webhook(request: Request):
