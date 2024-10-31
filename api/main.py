@@ -17,12 +17,12 @@ app = FastAPI()
 application: Application = None
 
 async def init_application():
-    global application
-    if application is None:
-        application = Application.builder().token(bot_token).build()
-        application.add_handler(CommandHandler("start", start))
-        application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-        await application.initialize()  # Initialize the application here
+    # global application
+    # if application is None:
+    application = Application.builder().token(bot_token).build()
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    await application.initialize()  # Initialize the application here
 
 async def start(update: Update, context) -> None:
     await update.message.reply_text("Hello! How can I help you today?")
