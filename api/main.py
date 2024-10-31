@@ -27,10 +27,14 @@ async def start(update: Update, context) -> None:
 
 async def handle_message(update: Update, context) -> None:
     text = update.message.text
+    wallets = ['bitcoin', 'btc', 'usdt', 'trc20', 'solana', 'sol', 'ripple', 'xrp', 'eth', 'ethereum']
     if "help" in text.lower():
         await update.message.reply_text("How can I assist you? Please provide details.")
     elif "deposit" in text.lower():
         await update.message.reply_text("Select wallet address:\nBitcoin (BTC)\nUSDT (TRC20)\nSolana (SOL)\nRipple (XRP)\nEthereum (ETH)")
+        text = update.message.text
+        if text.lower in wallets:
+            await update.message.reply_text("Enter amount you'd like to deposit?")
     else:
         await context.bot.send_message(chat_id=chat_id, text=f"User Message: {text}")
         await update.message.reply_text("Thank you for your message!")
