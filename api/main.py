@@ -51,8 +51,12 @@ async def handle_message(update: Update, context) -> None:
 async def keep_bot_active():
     while True:
         try:
-            await http_client.post(webhook_url, json={"message": "Keep bot active"})  # Sending a message to the bot
-            print("Sent a keep-alive message to the bot")
+            # Send a keep-alive message to the admin chat
+            await http_client.post(
+                f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                json={"chat_id": chat_id, "text": "Bot is active!"}
+            )
+            print("Sent a keep-alive message to the admin chat.")
         except Exception as e:
             print(f"Error sending keep-alive message: {e}")
         await asyncio.sleep(180)  # Sleep for 3 minutes
