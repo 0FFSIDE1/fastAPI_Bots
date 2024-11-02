@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Request, BackgroundTasks
-import httpx
+from fastapi import FastAPI, Request, APIRouter
 import requests
-from starlette.requests import Request
 from telegram import Update
+from telegram.ext import Application, CommandHandler, MessageHandler, filters
 import os
+import json
 from dotenv import load_dotenv
 from ...services.bot import keep_bot_active
 from main import lifespan
