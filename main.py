@@ -10,12 +10,24 @@ from api.v1.routes.bot import chinedu
 from fastapi.responses import JSONResponse
 
 load_dotenv()
-app = FastAPI()
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """Sets the webhook for the Telegram bot if not already set."""
+    if os.getenv("WEBHOOK_INITIALIZED") != "true":
+        url = f"https://api.telegram.org/bot{bot_token}/setWebhook"
+        response = requests.post(url, json={"url": webhook_url})
+        if response.status_code == 200:
+            print("Webhook set successfully!")
+            os.environ["WEBHOOK_INITIALIZED"] = "true"
+        else:
+            print(f"Failed to set webhook: {response.json()}")
     yield
+    await Request.aclose()
+    print("HTTP client closed.")
 
+app = FastAPI(lifespan=lifespan)
 app.router.lifespan_context = lifespan
 
 bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -35,23 +47,6 @@ app.add_middleware(
 
 app.include_router(chinedu)
 
-@app.on_event("startup")
-async def set_webhook():
-    """Sets the webhook for the Telegram bot if not already set."""
-    if os.getenv("WEBHOOK_INITIALIZED") != "true":
-        url = f"https://api.telegram.org/bot{bot_token}/setWebhook"
-        response = requests.post(url, json={"url": webhook_url})
-        if response.status_code == 200:
-            print("Webhook set successfully!")
-            os.environ["WEBHOOK_INITIALIZED"] = "true"
-        else:
-            print(f"Failed to set webhook: {response.json()}")
-
-# Shutdown event: Cleanup resources
-@app.on_event("shutdown")
-async def shutdown_event():
-    await Request.aclose()
-    print("HTTP client closed.")
 
 # Global error handler
 @app.exception_handler(Exception)

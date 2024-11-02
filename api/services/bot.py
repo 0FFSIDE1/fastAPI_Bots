@@ -2,7 +2,6 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 import os
 from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters
 from dotenv import load_dotenv
 import os
 
