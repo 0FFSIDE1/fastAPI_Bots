@@ -19,6 +19,12 @@ application = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global application
+
+load_dotenv()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     """Sets the webhook for the Telegram bot if not already set."""
     if os.getenv("WEBHOOK_INITIALIZED") != "true":
         url = f"https://api.telegram.org/bot{bot_token}/setWebhook"
@@ -39,6 +45,9 @@ async def lifespan(app: FastAPI):
         print("application initailized")
     yield
     
+    yield
+    await Request.aclose()
+    print("HTTP client closed.")
 
 app = FastAPI(lifespan=lifespan)
 app.router.lifespan_context = lifespan

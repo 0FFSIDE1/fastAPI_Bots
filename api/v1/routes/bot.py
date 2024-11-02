@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 from ...services.bot import keep_bot_active
 from main import lifespan
 
+from ...services.bot import get_application
+import asyncio
 
 load_dotenv()
 
@@ -19,7 +21,7 @@ chinedu = APIRouter(prefix="/api/v1", tags=['chinedu'])
 
 @chinedu.post("/webhook")
 async def telegram_webhook(request: Request):
-    application = await lifespan()
+    application = await get_application()
     data = await request.json()
     print(f'data: {data}')
     update = Update.de_json(data, application.bot)
