@@ -1,22 +1,18 @@
-from fastapi import Request, APIRouter
-
+from fastapi import APIRouter, Request
 from telegram import Update
-import os
-import json
-from dotenv import load_dotenv
-from ...services.bot import get_application, process_update
-load_dotenv()
-bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
-chat_id = os.getenv("TELEGRAM_ADMIN_CHAT_ID")
-webhook_url = os.getenv("WEBHOOK_URL")
+from ...services.bot import initialize_bot, application
+from fastapi import Request, HTTPException
 
- 
-chinedu = APIRouter()
+chinedu = APIRouter(prefix="/api/v1", tags=['chinedu'])
 
-@chinedu.post("/webhook")
+chinedu.post("/webhook")
 async def telegram_webhook(request: Request):
-    application = await get_application()  # Get the initialized application
-    data = await request.json()  # Get JSON data from the request
-    update = Update.de_json(data, application.bot)  # Create an Update object
-    await process_update(application, update)  # Process the update
-    return {"status": "ok"}
+    await initialize_bot()
+    try:
+        data = await request.json()
+        update = Update.de_json(data, application.bot)
+        await application.process_update(update)
+        return {"status": "ok"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    

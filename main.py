@@ -1,38 +1,48 @@
-import uvicorn
-from contextlib import asynccontextmanager
-from fastapi import FastAPI 
-import requests
-from fastapi.middleware.cors import CORSMiddleware
-from starlette.requests import Request
 import os
+from fastapi import FastAPI
+from contextlib import asynccontextmanager
+from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from api.v1.routes.bot import chinedu
-from api.services.bot import get_application
+import uvicorn
+import requests
+from api.services.bot import initialize_bot
 load_dotenv()
-app = FastAPI()
+
+from fastapi import APIRouter, Request
+from telegram import Update
+from api.services.bot import initialize_bot, application
+from fastapi import Request, HTTPException
+
+
+bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
+chat_id = os.getenv('TELEGRAM_ADMIN_CHAT_ID')
+webhook_url = os.getenv('WEBHOOK_URL')
+print(bot_token, chat_id, webhook_url)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Sets the webhook for the Telegram bot if not already set."""
-    if os.getenv("WEBHOOK_INITIALIZED") != "true":
-        url = f"https://api.telegram.org/bot{bot_token}/setWebhook"
-        response = requests.post(url, json={"url": webhook_url})
-        if response.status_code == 200:
-            print("Webhook set successfully!")
-            os.environ["WEBHOOK_INITIALIZED"] = "true"
-        else:
-            print(f"Failed to set webhook: {response.json()}")
-    await get_application()
-    print('Application initailized successfully')
+    """Sets the webhook for the Telegram bot."""
+    url = f"https://api.telegram.org/bot{bot_token}/setWebhook"
+    response = requests.post(url, json={"url": webhook_url})
+
+    if response.status_code == 200:
+        print("Webhook set successfully!")
+    else:
+        print(f"Failed to set webhook: {response.json()}")
+
+    await initialize_bot()
+    print("successful initialization")
     yield
-    
-app.router.lifespan_context = lifespan
-bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
-webhook_url = os.getenv("WEBHOOK_URL")
+
+
+app = FastAPI(lifespan=lifespan)
+
 origins = [
-    "http://localhost:3000",
-    "http://localhost:3001",
+    "http://localhost:8000",
+    "http://localhost:8000",
 ]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -40,14 +50,21 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.include_router(chinedu, prefix="/api/v1", tags=["Telegram Bot"])
 
-    
-@app.get("/", tags=["Home"])
-async def get_root(request: Request) -> dict:
-    return {
-        "message": "Welcome to ChineduIsABot",
-        "URL": "",
-    }
+app.include_router(chinedu)
+
+@app.get("/")
+async def root():
+    return {"message": "Welcome to the Telegram Bot Webhook!"}
+
+
 if __name__ == "__main__":
-    uvicorn.run("main:app", port=8000, reload=True)
+    # Start the application with uvicorn by specifying the import path
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+
+
+
+
+
+
+
