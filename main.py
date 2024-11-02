@@ -40,7 +40,7 @@ app = FastAPI(lifespan=lifespan)
 
 origins = [
     "http://localhost:8000",
-    "http://localhost:8000",
+    "https://405a-197-211-61-7.ngrok-free.app/api/v1/webhook",
 ]
 
 app.add_middleware(
