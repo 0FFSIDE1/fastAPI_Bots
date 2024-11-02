@@ -7,6 +7,7 @@ from starlette.requests import Request
 import os
 from dotenv import load_dotenv
 from api.v1.routes.bot import chinedu
+from api.services.bot import get_application
 load_dotenv()
 app = FastAPI()
 
@@ -21,6 +22,8 @@ async def lifespan(app: FastAPI):
             os.environ["WEBHOOK_INITIALIZED"] = "true"
         else:
             print(f"Failed to set webhook: {response.json()}")
+    await get_application()
+    print('Application initailized successfully')
     yield
     
 app.router.lifespan_context = lifespan
@@ -37,7 +40,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.include_router(chinedu)
+app.include_router(chinedu, prefix="/api/v1", tags=["Telegram Bot"])
 
     
 @app.get("/", tags=["Home"])
