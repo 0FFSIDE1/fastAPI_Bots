@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from starlette.requests import Request
 from telegram import Update
 import os
@@ -15,10 +15,21 @@ chinedu = APIRouter(prefix="/api/v1", tags=['chinedu'])
 
 @chinedu.post("/webhook")
 async def telegram_webhook(request: Request):
-    application = await get_application()
-    data = await request.json()
-    print(f'data: {data}')
-    update = Update.de_json(data, application.bot)
-    print(update)
-    await application.process_update(update)
-    return {"status": "ok"}
+    try:
+        # Get the application and data from the request
+        application = await get_application()
+        data = await request.json()
+        print(f'Data received from webhook: {data}')
+
+        # Create an Update object from the received data
+        update = Update.de_json(data, application.bot)
+        print(f'Processed Update: {update}')
+
+        # Process the update through the application
+        await application.process_update(update)
+
+        return {"status": "ok"}
+    
+    except Exception as e:
+        print(f"Error processing webhook: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
