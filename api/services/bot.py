@@ -1,7 +1,11 @@
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 import os
+from telegram import Update
+from telegram.ext import Application, CommandHandler, MessageHandler, filters
 from dotenv import load_dotenv
+import os
+
 
 
 load_dotenv()
@@ -18,9 +22,10 @@ async def get_application():
         application.add_handler(CommandHandler("start", start))
         # application.add_handler(CommandHandler("deposit", deposit))
         application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-        await application.initialize()  # Asynchronously initialize the application
-    return application
+        await application.initialize()
+        initialized = True  # Mark as initialized
 
+# Handlers for bot commands and messages
 async def start(update: Update, context) -> None:
     await update.message.reply_text("Hello! How can I help you today?")
 

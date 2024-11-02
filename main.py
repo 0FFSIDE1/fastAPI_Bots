@@ -7,6 +7,7 @@ from starlette.requests import Request
 import os
 from dotenv import load_dotenv
 from api.v1.routes.bot import chinedu
+from fastapi.responses import JSONResponse
 
 load_dotenv()
 app = FastAPI()
@@ -46,6 +47,17 @@ async def set_webhook():
         else:
             print(f"Failed to set webhook: {response.json()}")
 
+# Shutdown event: Cleanup resources
+@app.on_event("shutdown")
+async def shutdown_event():
+    await Request.aclose()
+    print("HTTP client closed.")
+
+# Global error handler
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    print(f"An error occurred: {exc}")
+    return JSONResponse(content={"message": "An internal error occurred."}, status_code=500)
 
 @app.get("/", tags=["Home"])
 async def get_root(request: Request) -> dict:
