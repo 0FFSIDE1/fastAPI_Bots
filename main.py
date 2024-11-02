@@ -7,21 +7,9 @@ from starlette.requests import Request
 import os
 from dotenv import load_dotenv
 from api.v1.routes.bot import chinedu
-from fastapi.responses import JSONResponse
-from telegram.ext import Application, CommandHandler, MessageHandler, filters
-from api.services.bot import handle_message, start
-load_dotenv()
-
-
-# Initialize the application variable as None
-application = None
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    global application
 
 load_dotenv()
-
+app = FastAPI()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -34,22 +22,8 @@ async def lifespan(app: FastAPI):
             os.environ["WEBHOOK_INITIALIZED"] = "true"
         else:
             print(f"Failed to set webhook: {response.json()}")
-
-    
-    if not application:
-        # Create an Application instance and add handlers
-        application = Application.builder().token(bot_token).build()
-        application.add_handler(CommandHandler("start", start))
-        application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-        await application.initialize()  # Initialize the application
-        print("application initailized")
     yield
-    
-    yield
-    await Request.aclose()
-    print("HTTP client closed.")
 
-app = FastAPI(lifespan=lifespan)
 app.router.lifespan_context = lifespan
 
 bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -70,11 +44,8 @@ app.add_middleware(
 app.include_router(chinedu)
 
 
-# Global error handler
-@app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    print(f"An error occurred: {exc}")
-    return JSONResponse(content={"message": "An internal error occurred."}, status_code=500)
+    
+
 
 @app.get("/", tags=["Home"])
 async def get_root(request: Request) -> dict:

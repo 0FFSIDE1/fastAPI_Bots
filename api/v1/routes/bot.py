@@ -1,15 +1,9 @@
-from fastapi import FastAPI, Request, APIRouter
-import requests
+from fastapi import APIRouter
+from starlette.requests import Request
 from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters
 import os
-import json
 from dotenv import load_dotenv
-from ...services.bot import keep_bot_active
-from main import lifespan
-
 from ...services.bot import get_application
-import asyncio
 
 load_dotenv()
 
@@ -28,11 +22,3 @@ async def telegram_webhook(request: Request):
     print(update)
     await application.process_update(update)
     return {"status": "ok"}
-
-
-# POST method to trigger the keep-alive background task
-@chinedu.post("/keep-alive")
-async def trigger_keep_alive(background_tasks: BackgroundTasks):
-    """Starts the background task to send keep-alive messages every 3 minutes."""
-    background_tasks.add_task(keep_bot_active)  # Start the background task
-    return {"status": "Keep-alive messages will be sent every 3 minutes."}
